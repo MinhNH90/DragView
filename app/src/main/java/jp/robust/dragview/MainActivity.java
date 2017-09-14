@@ -1,37 +1,27 @@
 package jp.robust.dragview;
 
+import android.app.Activity;
 import android.content.ClipData;
 import android.os.Build;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.DragEvent;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
-    private PopupWindow popupWindow;
-
-    private Animation animationScaleUp;
-    private Animation animationScaleDown;
+    private View layoutPopup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-        initPopupWindow();
 
-        animationScaleUp = AnimationUtils.loadAnimation(this, R.anim.scale_up);
-        animationScaleDown = AnimationUtils.loadAnimation(this, R.anim.scale_down);
+        layoutPopup = (View) findViewById(R.id.layoutPopup);
 
         findViewById(R.id.imgGoogle).setOnTouchListener(new TouchListener());
         findViewById(R.id.imgFacebook).setOnTouchListener(new TouchListener());
@@ -39,12 +29,18 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.imgYoutube).setOnTouchListener(new TouchListener());
 
         findViewById(R.id.lnBackground).setOnDragListener(new DragListener());
+        findViewById(R.id.lnListIcon).setOnDragListener(new DragListener());
         findViewById(R.id.rlGroup).setOnDragListener(new DragListener());
 
         findViewById(R.id.rlGroup).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                popupWindow.showAtLocation(v, Gravity.CENTER, 0, 0);
+                if (layoutPopup.getVisibility() == View.VISIBLE) {
+                    layoutPopup.setVisibility(View.GONE);
+
+                } else {
+                    layoutPopup.setVisibility(View.VISIBLE);
+                }
             }
         });
     }
@@ -78,29 +74,19 @@ public class MainActivity extends AppCompatActivity {
             switch (event.getAction()) {
                 case DragEvent.ACTION_DRAG_ENTERED:
                     if (v instanceof RelativeLayout) {
-                        RelativeLayout container = (RelativeLayout) v;
-                        container.startAnimation(animationScaleUp);
+                        layoutPopup.setVisibility(View.VISIBLE);
                     }
                     break;
 
                 case DragEvent.ACTION_DRAG_EXITED:
-                    if (v instanceof RelativeLayout) {
-                        RelativeLayout container = (RelativeLayout) v;
-                        container.startAnimation(animationScaleDown);
-                    }
                     break;
 
                 case DragEvent.ACTION_DROP:
                     View view = (View) event.getLocalState();
-                    ViewGroup owner = (ViewGroup) view.getParent();
-                    owner.removeView(view);
+                    if (v instanceof LinearLayout) {
+                        ViewGroup owner = (ViewGroup) view.getParent();
+                        owner.removeView(view);
 
-                    if (v instanceof RelativeLayout) {
-                        RelativeLayout container = (RelativeLayout) v;
-                        container.addView(view);
-                        container.startAnimation(animationScaleDown);
-
-                    } else if (v instanceof LinearLayout) {
                         LinearLayout container = (LinearLayout) v;
                         container.addView(view);
                     }
@@ -108,6 +94,9 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
                 case DragEvent.ACTION_DRAG_ENDED:
+                    if (v instanceof RelativeLayout) {
+                        layoutPopup.setVisibility(View.GONE);
+                    }
                     break;
 
                 default:
@@ -116,13 +105,5 @@ public class MainActivity extends AppCompatActivity {
 
             return true;
         }
-    }
-
-    private void initPopupWindow() {
-        LayoutInflater layoutInflater = (LayoutInflater) getBaseContext()
-                .getSystemService(LAYOUT_INFLATER_SERVICE);
-        View popupView = layoutInflater.inflate(R.layout.layout_popup, null);
-        popupWindow = new PopupWindow(
-                popupView, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
     }
 }
