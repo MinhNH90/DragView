@@ -1,37 +1,45 @@
 package jp.robust.dragview;
 
+import android.app.Activity;
 import android.content.ClipData;
 import android.os.Build;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.DragEvent;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
-    private PopupWindow popupWindow;
+    private View layoutPopup;
+    private View viewBackground;
+    private LinearLayout lnListIcon;
 
-    private Animation animationScaleUp;
-    private Animation animationScaleDown;
+    private Animation animationUp;
+    private Animation animationDown;
+
+    private Animation animationFadeIn;
+    private Animation animationFadeOut;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-        initPopupWindow();
 
-        animationScaleUp = AnimationUtils.loadAnimation(this, R.anim.scale_up);
-        animationScaleDown = AnimationUtils.loadAnimation(this, R.anim.scale_down);
+        animationUp = AnimationUtils.loadAnimation(this, R.anim.scale_up);
+        animationDown = AnimationUtils.loadAnimation(this, R.anim.scale_down);
+
+        animationFadeIn = AnimationUtils.loadAnimation(this, R.anim.alpha_show);
+        animationFadeOut = AnimationUtils.loadAnimation(this, R.anim.alpha_hidden);
+
+        layoutPopup = (View) findViewById(R.id.layoutPopup);
+        viewBackground = (View) findViewById(R.id.viewBackground);
+        lnListIcon = (LinearLayout) findViewById(R.id.lnListIcon);
 
         findViewById(R.id.imgGoogle).setOnTouchListener(new TouchListener());
         findViewById(R.id.imgFacebook).setOnTouchListener(new TouchListener());
@@ -39,12 +47,58 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.imgYoutube).setOnTouchListener(new TouchListener());
 
         findViewById(R.id.lnBackground).setOnDragListener(new DragListener());
+        findViewById(R.id.lnListIcon).setOnDragListener(new DragListener());
         findViewById(R.id.rlGroup).setOnDragListener(new DragListener());
 
         findViewById(R.id.rlGroup).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                popupWindow.showAtLocation(v, Gravity.CENTER, 0, 0);
+                if (getChildCount(v)) {
+                    toggleGroup(v);
+                }
+            }
+        });
+
+        viewBackground.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDialog(false);
+            }
+        });
+
+        animationFadeIn.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                layoutPopup.setVisibility(View.VISIBLE);
+                viewBackground.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+
+        animationFadeOut.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                layoutPopup.setVisibility(View.GONE);
+                viewBackground.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
             }
         });
     }
@@ -62,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
                     view.startDrag(data, shadowBuilder, view, 0);
                 }
                 view.setVisibility(View.INVISIBLE);
+                showDialog(false);
 
                 return true;
 
@@ -72,21 +127,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     class DragListener implements View.OnDragListener {
-
         @Override
         public boolean onDrag(View v, DragEvent event) {
             switch (event.getAction()) {
                 case DragEvent.ACTION_DRAG_ENTERED:
-                    if (v instanceof RelativeLayout) {
+                    if (v.getId() == R.id.rlGroup) {
                         RelativeLayout container = (RelativeLayout) v;
-                        container.startAnimation(animationScaleUp);
+                        showDialog(false);
+                        container.startAnimation(animationUp);
                     }
+
                     break;
 
                 case DragEvent.ACTION_DRAG_EXITED:
-                    if (v instanceof RelativeLayout) {
+                    if (v.getId() == R.id.rlGroup) {
                         RelativeLayout container = (RelativeLayout) v;
-                        container.startAnimation(animationScaleDown);
+                        container.startAnimation(animationDown);
                     }
                     break;
 
@@ -95,15 +151,17 @@ public class MainActivity extends AppCompatActivity {
                     ViewGroup owner = (ViewGroup) view.getParent();
                     owner.removeView(view);
 
-                    if (v instanceof RelativeLayout) {
-                        RelativeLayout container = (RelativeLayout) v;
-                        container.addView(view);
-                        container.startAnimation(animationScaleDown);
-
-                    } else if (v instanceof LinearLayout) {
+                    if (v.getId() == R.id.lnBackground) {
                         LinearLayout container = (LinearLayout) v;
                         container.addView(view);
+
+                    } else if (v.getId() == R.id.rlGroup) {
+                        RelativeLayout container = (RelativeLayout) v;
+                        container.addView(view);
+                        view.setEnabled(false);
+                        container.startAnimation(animationDown);
                     }
+
                     view.setVisibility(View.VISIBLE);
                     break;
 
@@ -118,11 +176,48 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void initPopupWindow() {
-        LayoutInflater layoutInflater = (LayoutInflater) getBaseContext()
-                .getSystemService(LAYOUT_INFLATER_SERVICE);
-        View popupView = layoutInflater.inflate(R.layout.layout_popup, null);
-        popupWindow = new PopupWindow(
-                popupView, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+    private void toggleGroup(View view) {
+        if (layoutPopup.getVisibility() == View.VISIBLE) {
+            showDialog(false);
+        } else {
+            showDialog(true);
+        }
+    }
+
+    private boolean getChildCount(View view) {
+        if (view.getId() == R.id.rlGroup) {
+            RelativeLayout container = (RelativeLayout) view;
+            int childCount = container.getChildCount();
+            for (int i = 0; i < childCount; i++) {
+                View v = container.getChildAt(0);
+                if (v != null) {
+                    container.removeView(v);
+                    lnListIcon.addView(v);
+                    v.setEnabled(true);
+                    v.setVisibility(View.VISIBLE);
+                }
+            }
+
+            if (childCount > 0 || lnListIcon.getChildCount() > 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void showDialog(boolean isShow) {
+        if (isShow) {
+//            layoutPopup.startAnimation(animationFadeIn);
+
+            layoutPopup.setVisibility(View.VISIBLE);
+            viewBackground.setVisibility(View.VISIBLE);
+
+        } else {
+//            layoutPopup.startAnimation(animationFadeOut);
+
+            layoutPopup.setVisibility(View.GONE);
+            viewBackground.setVisibility(View.GONE);
+        }
     }
 }
