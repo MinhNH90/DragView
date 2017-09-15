@@ -39,31 +39,33 @@
             android:src="@mipmap/ic_youtube" />
     </LinearLayout>
 
-    <LinearLayout
+    <View
+        android:id="@+id/viewBackground"
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        android:clickable="true"
+        android:visibility="gone" />
+
+    <include
+        android:id="@+id/layoutPopup"
+        layout="@layout/layout_popup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:visibility="gone" />
+
+    <RelativeLayout
+        android:id="@+id/rlGroup"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="10dp"
+        android:layout_margin="10dp"
+        android:background="@drawable/shape"
         android:gravity="center"
-        android:orientation="vertical">
-
-        <include
-            android:id="@+id/layoutPopup"
-            layout="@layout/layout_popup"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:visibility="gone" />
-
-        <RelativeLayout
-            android:id="@+id/rlGroup"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/shape"
-            android:gravity="center"
-            android:padding="5dp" />
-
-    </LinearLayout>
+        android:padding="5dp" />
 
 </RelativeLayout>
