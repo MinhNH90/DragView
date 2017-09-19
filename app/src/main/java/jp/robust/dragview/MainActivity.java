@@ -54,7 +54,7 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 if (getChildCount(v)) {
-                    toggleGroup(v);
+                    toggleGroup();
                 }
             }
         });
@@ -69,13 +69,12 @@ public class MainActivity extends Activity {
         animationFadeIn.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
-
+                viewBackground.setVisibility(View.VISIBLE);
             }
 
             @Override
             public void onAnimationEnd(Animation animation) {
                 layoutPopup.setVisibility(View.VISIBLE);
-                viewBackground.setVisibility(View.VISIBLE);
             }
 
             @Override
@@ -116,7 +115,6 @@ public class MainActivity extends Activity {
                     view.startDrag(data, shadowBuilder, view, 0);
                 }
                 view.setVisibility(View.INVISIBLE);
-                showDialog(false);
 
                 return true;
 
@@ -133,8 +131,11 @@ public class MainActivity extends Activity {
                 case DragEvent.ACTION_DRAG_ENTERED:
                     if (v.getId() == R.id.rlGroup) {
                         RelativeLayout container = (RelativeLayout) v;
-                        showDialog(false);
                         container.startAnimation(animationUp);
+                    }
+
+                    if (v.getId() != R.id.lnListIcon && layoutPopup.getVisibility() == View.VISIBLE) {
+                        showDialog(false);
                     }
 
                     break;
@@ -151,7 +152,7 @@ public class MainActivity extends Activity {
                     ViewGroup owner = (ViewGroup) view.getParent();
                     owner.removeView(view);
 
-                    if (v.getId() == R.id.lnBackground) {
+                    if (v.getId() == R.id.lnBackground || v.getId() == R.id.lnListIcon) {
                         LinearLayout container = (LinearLayout) v;
                         container.addView(view);
 
@@ -176,7 +177,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void toggleGroup(View view) {
+    private void toggleGroup() {
         if (layoutPopup.getVisibility() == View.VISIBLE) {
             showDialog(false);
         } else {
@@ -208,16 +209,11 @@ public class MainActivity extends Activity {
 
     private void showDialog(boolean isShow) {
         if (isShow) {
-//            layoutPopup.startAnimation(animationFadeIn);
-
-            layoutPopup.setVisibility(View.VISIBLE);
-            viewBackground.setVisibility(View.VISIBLE);
+            layoutPopup.startAnimation(animationFadeIn);
 
         } else {
-//            layoutPopup.startAnimation(animationFadeOut);
+            layoutPopup.startAnimation(animationFadeOut);
 
-            layoutPopup.setVisibility(View.GONE);
-            viewBackground.setVisibility(View.GONE);
         }
     }
 }
