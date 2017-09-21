@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFF">
+    android:background="#78B6C1">
 
     <LinearLayout
         android:id="@+id/lnBackground"
@@ -15,6 +15,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="5dp"
+            android:scaleType="fitCenter"
             android:src="@mipmap/ic_google" />
 
         <ImageView
@@ -22,6 +23,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="5dp"
+            android:scaleType="fitCenter"
             android:src="@mipmap/ic_facebook" />
 
         <ImageView
@@ -29,6 +31,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="5dp"
+            android:scaleType="fitCenter"
             android:src="@mipmap/ic_instagram" />
 
         <ImageView
@@ -36,16 +39,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="5dp"
+            android:scaleType="fitCenter"
             android:src="@mipmap/ic_youtube" />
     </LinearLayout>
-
-    <View
-        android:id="@+id/viewBackground"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#80000000"
-        android:clickable="true"
-        android:visibility="gone" />
 
     <include
         android:id="@+id/layoutPopup"
@@ -57,15 +53,17 @@
         android:layout_marginRight="10dp"
         android:visibility="gone" />
 
-    <RelativeLayout
+    <TableLayout
         android:id="@+id/rlGroup"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_margin="10dp"
         android:background="@drawable/shape"
         android:gravity="center"
-        android:padding="5dp" />
+        android:padding="5dp"
+        android:shrinkColumns="true"
+        android:stretchColumns="true" />
 
 </RelativeLayout>

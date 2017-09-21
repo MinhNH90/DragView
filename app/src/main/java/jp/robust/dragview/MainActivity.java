@@ -10,47 +10,61 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
+import android.widget.TableLayout;
 
 public class MainActivity extends Activity {
 
     private View layoutPopup;
-    private View viewBackground;
+
+    private ImageView imgGoogle;
+    private ImageView imgFacebook;
+    private ImageView imgInstagram;
+    private ImageView imgYoutube;
+
+    private TableLayout rlGroup;
+
+    private LinearLayout lnBackground;
     private LinearLayout lnListIcon;
 
     private Animation animationUp;
     private Animation animationDown;
-
     private Animation animationFadeIn;
     private Animation animationFadeOut;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
 
         animationUp = AnimationUtils.loadAnimation(this, R.anim.scale_up);
         animationDown = AnimationUtils.loadAnimation(this, R.anim.scale_down);
-
         animationFadeIn = AnimationUtils.loadAnimation(this, R.anim.alpha_show);
         animationFadeOut = AnimationUtils.loadAnimation(this, R.anim.alpha_hidden);
 
         layoutPopup = (View) findViewById(R.id.layoutPopup);
-        viewBackground = (View) findViewById(R.id.viewBackground);
+
+        imgGoogle = (ImageView) findViewById(R.id.imgGoogle);
+        imgFacebook = (ImageView) findViewById(R.id.imgFacebook);
+        imgInstagram = (ImageView) findViewById(R.id.imgInstagram);
+        imgYoutube = (ImageView) findViewById(R.id.imgYoutube);
+
         lnListIcon = (LinearLayout) findViewById(R.id.lnListIcon);
+        lnBackground = (LinearLayout) findViewById(R.id.lnBackground);
 
-        findViewById(R.id.imgGoogle).setOnTouchListener(new TouchListener());
-        findViewById(R.id.imgFacebook).setOnTouchListener(new TouchListener());
-        findViewById(R.id.imgInstagram).setOnTouchListener(new TouchListener());
-        findViewById(R.id.imgYoutube).setOnTouchListener(new TouchListener());
+        rlGroup = (TableLayout) findViewById(R.id.rlGroup);
 
-        findViewById(R.id.lnBackground).setOnDragListener(new DragListener());
-        findViewById(R.id.lnListIcon).setOnDragListener(new DragListener());
-        findViewById(R.id.rlGroup).setOnDragListener(new DragListener());
+        imgGoogle.setOnTouchListener(new TouchListener());
+        imgFacebook.setOnTouchListener(new TouchListener());
+        imgInstagram.setOnTouchListener(new TouchListener());
+        imgYoutube.setOnTouchListener(new TouchListener());
 
-        findViewById(R.id.rlGroup).setOnClickListener(new View.OnClickListener() {
+        lnBackground.setOnDragListener(new DragListener());
+        lnListIcon.setOnDragListener(new DragListener());
+        rlGroup.setOnDragListener(new DragListener());
+
+        rlGroup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (getChildCount(v)) {
@@ -59,7 +73,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        viewBackground.setOnClickListener(new View.OnClickListener() {
+        lnBackground.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showDialog(false);
@@ -69,7 +83,7 @@ public class MainActivity extends Activity {
         animationFadeIn.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
-                viewBackground.setVisibility(View.VISIBLE);
+
             }
 
             @Override
@@ -92,7 +106,7 @@ public class MainActivity extends Activity {
             @Override
             public void onAnimationEnd(Animation animation) {
                 layoutPopup.setVisibility(View.GONE);
-                viewBackground.setVisibility(View.GONE);
+                moveChildCount();
             }
 
             @Override
@@ -130,7 +144,7 @@ public class MainActivity extends Activity {
             switch (event.getAction()) {
                 case DragEvent.ACTION_DRAG_ENTERED:
                     if (v.getId() == R.id.rlGroup) {
-                        RelativeLayout container = (RelativeLayout) v;
+                        TableLayout container = (TableLayout) v;
                         container.startAnimation(animationUp);
                     }
 
@@ -142,7 +156,7 @@ public class MainActivity extends Activity {
 
                 case DragEvent.ACTION_DRAG_EXITED:
                     if (v.getId() == R.id.rlGroup) {
-                        RelativeLayout container = (RelativeLayout) v;
+                        TableLayout container = (TableLayout) v;
                         container.startAnimation(animationDown);
                     }
                     break;
@@ -154,12 +168,11 @@ public class MainActivity extends Activity {
 
                     if (v.getId() == R.id.lnBackground || v.getId() == R.id.lnListIcon) {
                         LinearLayout container = (LinearLayout) v;
-                        container.addView(view);
+                        addViewToLinearLayout(container, view);
 
                     } else if (v.getId() == R.id.rlGroup) {
-                        RelativeLayout container = (RelativeLayout) v;
-                        container.addView(view);
-                        view.setEnabled(false);
+                        TableLayout container = (TableLayout) v;
+                        addViewToTable(container, view);
                         container.startAnimation(animationDown);
                     }
 
@@ -187,14 +200,13 @@ public class MainActivity extends Activity {
 
     private boolean getChildCount(View view) {
         if (view.getId() == R.id.rlGroup) {
-            RelativeLayout container = (RelativeLayout) view;
+            TableLayout container = (TableLayout) view;
             int childCount = container.getChildCount();
             for (int i = 0; i < childCount; i++) {
                 View v = container.getChildAt(0);
                 if (v != null) {
                     container.removeView(v);
-                    lnListIcon.addView(v);
-                    v.setEnabled(true);
+                    addViewToLinearLayout(lnListIcon, v);
                     v.setVisibility(View.VISIBLE);
                 }
             }
@@ -207,13 +219,38 @@ public class MainActivity extends Activity {
         return false;
     }
 
+    private void moveChildCount() {
+        TableLayout container = (TableLayout) findViewById(R.id.rlGroup);
+        int childCount = lnListIcon.getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            View v = lnListIcon.getChildAt(0);
+            if (v != null) {
+                lnListIcon.removeView(v);
+                addViewToTable(container, v);
+                v.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
     private void showDialog(boolean isShow) {
-        if (isShow) {
+        if (isShow && layoutPopup.getVisibility() == View.GONE) {
             layoutPopup.startAnimation(animationFadeIn);
 
-        } else {
+        } else if (!isShow && layoutPopup.getVisibility() == View.VISIBLE) {
             layoutPopup.startAnimation(animationFadeOut);
-
         }
+    }
+
+    private void addViewToTable(TableLayout tableLayout, View view) {
+        TableLayout.LayoutParams tableParams = new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT);
+        tableParams.weight = 1;
+        view.setEnabled(false);
+        tableLayout.addView(view, tableParams);
+    }
+
+    private void addViewToLinearLayout(LinearLayout linearLayout, View view) {
+        LinearLayout.LayoutParams linearLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        view.setEnabled(true);
+        linearLayout.addView(view, linearLayoutParams);
     }
 }
